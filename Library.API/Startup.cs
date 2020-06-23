@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Library.API
 {
@@ -76,6 +79,34 @@ namespace Library.API
             services.AddScoped<IAuthorRepository, AuthorRepository>();
 
             services.AddAutoMapper();
+
+            services.AddSwaggerGen(setupAction =>
+            {
+                setupAction.SwaggerDoc(
+                    "LibraryOpenAPISecification",
+                    new Microsoft.OpenApi.Models.OpenApiInfo()
+                    {
+                        Title = "Library API",
+                        Version = "1",
+                        Description = "Through this API you can access authors and their books.",
+                        Contact = new Microsoft.OpenApi.Models.OpenApiContact()
+                        {
+                            Email = "tar.grytsenko@gmail.com",
+                            Name = "Tarik Batman",
+                            Url = new Uri("https://www.instagram.com/tarasgrytsenko")                          
+                        },
+                        License = new Microsoft.OpenApi.Models.OpenApiLicense()
+                        { 
+                            Name = "MIT License",
+                            Url = new Uri("https://opensource.org/licenses/MIT")
+                        }
+                    });
+
+                var xmlDocFileName = Assembly.GetExecutingAssembly().GetName().Name + ".xml";
+                var absolutePathForDocs = Path.Combine(AppDomain.CurrentDomain.BaseDirectory + xmlDocFileName);
+
+                setupAction.IncludeXmlComments(absolutePathForDocs);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -93,6 +124,16 @@ namespace Library.API
             }
 
             app.UseHttpsRedirection();
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(setupAction => 
+            {
+                setupAction.SwaggerEndpoint(
+                    "/swagger/LibraryOpenAPISecification/swagger.json",
+                    "LibraryAPI");
+                setupAction.RoutePrefix = "";
+            });
 
             app.UseStaticFiles();
 
