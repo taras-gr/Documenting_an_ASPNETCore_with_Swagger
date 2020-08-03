@@ -31,12 +31,39 @@
         </member>
         <member name="M:Library.API.Controllers.BooksController.GetBook(System.Guid,System.Guid)">
             <summary>
-            Get a book bby id for a specific author
+            Get a book by id for a specific author
             </summary>
             <param name="authorId">The id of the book author</param>
             <param name="bookId">The id of the book</param>
             <returns>An ActionResult of type book</returns>
             <response code="200">Returns the requested book</response>
+        </member>
+        <member name="M:Library.API.Controllers.BooksController.GetBookWithConcatanatedAuthorName(System.Guid,System.Guid)">
+            <summary>
+            Get a book with concatanated author name by id for a specific author
+            </summary>
+            <param name="authorId">The id of the book author</param>
+            <param name="bookId">The id of the book</param>
+            <returns>An ActionResult of type book</returns>
+            <response code="200">Returns the requested book</response>
+        </member>
+        <member name="M:Library.API.Controllers.BooksController.CreateBook(System.Guid,Library.API.Models.BookForCreation)">
+            <summary>
+            Create a book for a specific author
+            </summary>
+            <param name="authorId">The id for the book atuhor</param>
+            <param name="bookForCreation">The book to create</param>
+            <returns>An ActionResult of yupr Book</returns>
+            <response code="422">Validation error</response>
+        </member>
+        <member name="M:Library.API.Controllers.BooksController.CreateBookWithAmountOfPages(System.Guid,Library.API.Models.BookForCreationWithAmountOfPages)">
+            <summary>
+            Create a book for a specific author
+            </summary>
+            <param name="authorId">The id for the book atuhor</param>
+            <param name="bookForCreationWithAmountOfPages">The book to create</param>
+            <returns>An ActionResult of yupr Book</returns>
+            <response code="422">Validation error</response>
         </member>
         <member name="T:Library.API.Models.Author">
             <summary>

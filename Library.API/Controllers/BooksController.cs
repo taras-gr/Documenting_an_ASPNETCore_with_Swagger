@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using Library.API.Attributes;
 using Library.API.Models;
 using Library.API.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -45,15 +47,19 @@ namespace Library.API.Controllers
         }
 
         /// <summary>
-        /// Get a book bby id for a specific author
+        /// Get a book by id for a specific author
         /// </summary>
         /// <param name="authorId">The id of the book author</param>
         /// <param name="bookId">The id of the book</param>
         /// <returns>An ActionResult of type book</returns>
         /// <response code="200">Returns the requested book</response>
+        [HttpGet("{bookId}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet("{bookId}")]
+        [Produces("application/vnd.marvin.book+json")]
+        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+            "application/json",
+            "application/vnd.marvin.book+json")]
         public async Task<ActionResult<Book>> GetBook(
             Guid authorId,
             Guid bookId)
@@ -72,9 +78,52 @@ namespace Library.API.Controllers
             return Ok(_mapper.Map<Book>(bookFromRepo));
         }
 
+        /// <summary>
+        /// Get a book with concatanated author name by id for a specific author
+        /// </summary>
+        /// <param name="authorId">The id of the book author</param>
+        /// <param name="bookId">The id of the book</param>
+        /// <returns>An ActionResult of type book</returns>
+        /// <response code="200">Returns the requested book</response>
+        [HttpGet("{bookId}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Produces("application/vnd.marvin.bookwithconcatanatedauthorname+json")]
+        [RequestHeaderMatchesMediaType(HeaderNames.Accept,
+            "application/vnd.marvin.bookwithconcatanatedauthorname+json")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<ActionResult<BookWithConcatenatedAuthorName>> GetBookWithConcatanatedAuthorName(
+            Guid authorId,
+            Guid bookId)
+        {
+            if (!await _authorRepository.AuthorExistsAsync(authorId))
+            {
+                return NotFound();
+            }
 
+            var bookFromRepo = await _bookRepository.GetBookAsync(authorId, bookId);
+            if (bookFromRepo == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(_mapper.Map<BookWithConcatenatedAuthorName>(bookFromRepo));
+        }
+
+        /// <summary>
+        /// Create a book for a specific author
+        /// </summary>
+        /// <param name="authorId">The id for the book atuhor</param>
+        /// <param name="bookForCreation">The book to create</param>
+        /// <returns>An ActionResult of yupr Book</returns>
+        /// <response code="422">Validation error</response>
         [HttpPost()]
-        [Consumes("application/json")]
+        [Consumes("application/json", "application.vnd.marvin/bookforcreation+json")]
+        [RequestHeaderMatchesMediaType(HeaderNames.ContentType, 
+            "application/json", "application.vnd.marvin/bookforcreation+json")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult<Book>> CreateBook(
             Guid authorId,
             [FromBody] BookForCreation bookForCreation)
@@ -90,7 +139,41 @@ namespace Library.API.Controllers
 
             return CreatedAtRoute(
                 "GetBook",
-                new { authorId, bookId = bookToAdd.Id },
+                (authorId, bookId: bookToAdd.Id),
+                _mapper.Map<Book>(bookToAdd));
+        }
+
+        /// <summary>
+        /// Create a book for a specific author
+        /// </summary>
+        /// <param name="authorId">The id for the book atuhor</param>
+        /// <param name="bookForCreationWithAmountOfPages">The book to create</param>
+        /// <returns>An ActionResult of yupr Book</returns>
+        /// <response code="422">Validation error</response>
+        [HttpPost()]
+        [Consumes("application.vnd.marvin/bookforcreationwtihamountofpages+json")]
+        [RequestHeaderMatchesMediaType(HeaderNames.ContentType,
+            "application.vnd.marvin/bookforcreationwtihamountofpages+json")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<ActionResult<Book>> CreateBookWithAmountOfPages(
+            Guid authorId,
+            [FromBody] BookForCreationWithAmountOfPages bookForCreationWithAmountOfPages)
+        {
+            if (!await _authorRepository.AuthorExistsAsync(authorId))
+            {
+                return NotFound();
+            }
+
+            var bookToAdd = _mapper.Map<Entities.Book>(bookForCreationWithAmountOfPages);
+            _bookRepository.AddBook(bookToAdd);
+            await _bookRepository.SaveChangesAsync();
+
+            return CreatedAtRoute(
+                "GetBook",
+                (authorId, bookId: bookToAdd.Id),
                 _mapper.Map<Book>(bookToAdd));
         }
     }

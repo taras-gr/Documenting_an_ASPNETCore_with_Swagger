@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Library.API.Contexts;
+using Library.API.OperationFilters;
 using Library.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.IO;
 using System.Linq;
@@ -110,6 +112,19 @@ namespace Library.API
                             Url = new Uri("https://opensource.org/licenses/MIT")
                         }
                     });
+
+                //setupAction.ResolveConflictingActions(apiDescriptions =>
+                //{
+                //    return apiDescriptions.First();
+                //});
+
+                setupAction.CustomOperationIds(apiDesc =>
+                {
+                    return apiDesc.TryGetMethodInfo(out MethodInfo methodInfo) ? methodInfo.Name : null;
+                });
+
+                setupAction.OperationFilter<GetBookOperationFilter>();
+                setupAction.OperationFilter<CreateBookOperationFilter>();
 
                 var xmlDocFileName = Assembly.GetExecutingAssembly().GetName().Name + ".xml";
                 var absolutePathForDocs = Path.Combine(AppDomain.CurrentDomain.BaseDirectory + xmlDocFileName);
