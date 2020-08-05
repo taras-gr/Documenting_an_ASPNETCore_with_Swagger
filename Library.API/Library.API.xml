@@ -29,6 +29,13 @@
             ]\
             </remarks>
         </member>
+        <member name="M:Library.API.Controllers.AuthorsControllerV2.GetAuthors">
+            <summary>
+            Get the authors (V2)
+            </summary>
+            <returns>An ActionResult object</returns>
+            <response code="200">An author collection</response>
+        </member>
         <member name="M:Library.API.Controllers.BooksController.GetBook(System.Guid,System.Guid)">
             <summary>
             Get a book by id for a specific author
