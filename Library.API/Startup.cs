@@ -227,6 +227,11 @@ namespace Library.API
 
             app.UseSwaggerUI(setupAction => 
             {
+                setupAction.InjectStylesheet("/Assets/custom-ui-css.css");
+                //setupAction.IndexStream = ()
+                //        => GetType().Assembly
+                //        .GetManifestResourceStream("Library.API.EmbeddedAssets.index.html");
+
                 foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
                 {
                     setupAction.SwaggerEndpoint(
@@ -241,6 +246,13 @@ namespace Library.API
                 //     "/swagger/LibraryOpenAPISecificationBooks/swagger.json",
                 //     "LibraryAPI (Books)");
                 setupAction.RoutePrefix = "";
+
+                setupAction.DefaultModelExpandDepth(2);
+                setupAction.DefaultModelRendering(Swashbuckle.AspNetCore.SwaggerUI.ModelRendering.Model);
+                setupAction.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+                setupAction.DisplayRequestDuration();
+                setupAction.EnableDeepLinking();
+                setupAction.DisplayOperationId();
             });
 
             app.UseStaticFiles();
